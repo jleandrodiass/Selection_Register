@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Selection_Register.Services;
 
 namespace Selection_Register
 {
@@ -18,25 +19,24 @@ namespace Selection_Register
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddControllers();
-            var Key = Encoding.ASCII.GetBytes(ValidT.Secret);
-            services.AddAuthentication(x =>
-           {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-           })
-          .AddJwtBearer(x =>
-          {
-             x.RequireHttpsMetadata = false;
-             x.SaveToken = true;
-             x.TokenValidationParameters = new TokenValidationParameters
-             {
-                 ValidateIssuerSigningKey = true,
-                 IssuerSigningKey = new SymmetricSecurityKey(Key),
-                 ValidateAudience = false
-             };
-          });
+     
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = Configuration["Jwt:Audience"],
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                };
+            });
 
+            services.AddScoped<ITokenService, TokenService>();
         }
+
         public void Configure(WebApplication app, IWebHostEnvironment environment)
              {
                  if (app.Environment.IsDevelopment())

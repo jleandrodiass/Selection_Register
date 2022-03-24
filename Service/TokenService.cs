@@ -6,26 +6,32 @@ using Selection_Register.modelo;
 
 namespace Selection_Register.Services
 {
-    public static class TokenService
+    public class TokenService : ITokenService
     {
-        public static string GenerateToken(Credenciado credenciado )
-        {
-            var tokenH = new JwtSecurityTokenHandler();
-             var key = Encoding.ASCII.GetBytes(ValidT.Secret);
-              var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(  ClaimTypes.Name, credenciado.Nome.ToString()),
-                    new Claim(ClaimTypes.Role, credenciado.Cargo.ToString())
+        private readonly IConfiguration _configuration;
 
-                }),
-                Expires = DateTime.UtcNow.AddHours(8),
-                 SigningCredentials = 
-                  new SigningCredentials(new SymmetricSecurityKey(key),SecurityAlgorithms.HmacSha256Signature)
-            };
-                var token = tokenH.CreateToken(tokenDescriptor);
-                 return tokenH.WriteToken(token);
+        public TokenService(IConfiguration configuration)
+        {
+            _configuration = configuration;
         }
+
+        public JwtSecurityToken GenerateJWTToken(Credenciado user)
+        {
+            var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                new Claim("Nome", user.Nome),
+                new Claim("Cargo", user.Cargo)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+
+            var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims, expires: DateTime.UtcNow.AddHours(8), signingCredentials: signIn);
+            return token;
+        }
+
     }
 }

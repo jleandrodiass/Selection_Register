@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Selection_Register.Dtomodel;
@@ -12,6 +13,13 @@ namespace Selection_Register.modelo.Controllers
     [AllowAnonymous]
     public class GeradorTkController : ControllerBase
     {
+        private readonly ITokenService _token;
+
+        public GeradorTkController(ITokenService token)
+        {
+            _token = token;
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> AuthenticateAsync([FromBody] CredenciadoDto credenciadoDto)
         {
@@ -30,10 +38,9 @@ namespace Selection_Register.modelo.Controllers
             {
                 return Unauthorized(new{message = "Usuario ou senha invalidos"});
             }
-
-            var token  = TokenService.GenerateToken(user);
+            var token  = _token.GenerateJWTToken(user);
              
-            var result  = new { accessToken = token, Usuario = new { user.Login, user.Nome, user.Cargo }};
+            var result  = new { accessToken = new JwtSecurityTokenHandler().WriteToken(token), Usuario = new { user.Login, user.Nome, user.Cargo }};
 
             return Ok(result);
         }

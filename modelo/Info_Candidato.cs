@@ -9,6 +9,5 @@ namespace Selection_Register.modelo
         public string Nome_candidato { get; set; }
         public string Competencia { get; set; }
         public string Experiencia { get; set; }
-        public string Arquivo_Cv { get; set; } //byte[] sql=varbinary(MAX)
     }
 }

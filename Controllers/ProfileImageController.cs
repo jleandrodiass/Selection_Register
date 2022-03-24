@@ -14,8 +14,9 @@ using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
 namespace Selection_Register.modelo.Controllers
 {
 
-     [ApiController]
+    [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class ProfileImageController : ControllerBase
    {
       public IHostingEnvironment hostingEnvironment;
@@ -24,25 +25,30 @@ namespace Selection_Register.modelo.Controllers
       {
           hostingEnvironment = hostingEnv;
       }
-      [HttpPost]
-      public ActionResult UploadImages(IList<IFormFile> arquivos)
+      [HttpPut]
+      [Route("{usuarioId}")]
+      public ActionResult UploadImages(int usuarioId, IFormFile arquivo)
       {
-        using (var db = new repositorio.Contexto())
+        if(arquivo == null)
         {
-            IFormFile imagemCarregada = arquivos.FirstOrDefault();
-            if(imagemCarregada != null)
+            return BadRequest();
+        }
+
+        using (var db = new repositorio.Contexto())
+        {          
+
+            MemoryStream ms = new MemoryStream();
+            arquivo.OpenReadStream().CopyTo(ms);
+            UploadArquivos arqui = new UploadArquivos()
             {
-                MemoryStream ms = new MemoryStream();
-                imagemCarregada.OpenReadStream().CopyTo(ms);
-                UploadArquivos arqui = new UploadArquivos()
-                {
-                    Descricao = imagemCarregada.FileName,
-                    Dados = ms.ToArray(),
-                    ContentType = imagemCarregada.ContentType
-                };
-                db.UploadArquivos.Add(arqui);
-                db.SaveChanges();
-            }
+                Descricao = arquivo.FileName,
+                Dados = ms.ToArray(),
+                ContentType = arquivo.ContentType
+            };
+
+            db.UploadArquivos.Add(arqui);
+            db.SaveChanges();
+            
             return  Ok("Saved Successfully");
         }
       }
@@ -57,7 +63,37 @@ namespace Selection_Register.modelo.Controllers
           }
       }
    }
-}
+
+}                   //  public ActionResult UploadImages(int usuarioId, IFormFile arquivo)
+                //       {
+                //         if(arquivo == null)
+                //         {
+                //             return BadRequest();
+                //         }
+
+                //         using (var db = new repositorio.Contexto())
+                //         {          
+
+                //             MemoryStream ms = new MemoryStream();
+                //             arquivo.OpenReadStream().CopyTo(ms);
+                //             UploadArquivos arqui = new UploadArquivos()
+                //             {
+                //                 Descricao = arquivo.FileName,
+                //                 Dados = ms.ToArray(),
+                //                 ContentType = arquivo.ContentType
+                //             };
+
+                //             db.UploadArquivos.Add(arqui);
+                //             db.SaveChanges();
+                            
+                //             return  Ok("Saved Successfully");
+                //         }
+
+
+
+
+
+
         //     {
 
         //         try

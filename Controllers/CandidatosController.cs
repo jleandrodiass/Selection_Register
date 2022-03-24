@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Selection_Register.business;
 using Selection_Register.repositorio;
+
 namespace Selection_Register.modelo.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class CandidatosController : ControllerBase
     {
         [HttpGet]

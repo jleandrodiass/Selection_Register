@@ -23,6 +23,11 @@ namespace Selection_Register.repositorio
                  return lista;
             }
         }
+
+        // public ActionResult UpdateFoto(int id, foto)
+        // {
+
+        // }
         public ActionResult Delete(int id)
         {
             using ( var db = new repositorio.Contexto())
